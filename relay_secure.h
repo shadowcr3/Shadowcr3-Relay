@@ -20,8 +20,8 @@ struct SessionKeys {
   DirKeys tx;              
   DirKeys rx;              
   uint8_t addr[5];         
-  uint8_t fingerprint[4];  
-  };
+  uint8_t fingerprint[4]; 
+};
 
 namespace detail {
 
@@ -45,13 +45,12 @@ inline bool deriveDir(const uint8_t prk[32], Role sender, DirKeys &d) {
   return ok;
 }
 
-}
-
+}  
 inline bool deriveSessionKeys(const uint8_t master[KEY_BYTES], Role role, SessionKeys &k) {
   uint8_t prk[32];
   uint8_t t[32];
   bool ok = crypto::hmacSha256(reinterpret_cast<const uint8_t *>(detail::kSalt), strlen(detail::kSalt), master,
-                               KEY_BYTES, prk);  
+                               KEY_BYTES, prk);  // HKDF-Extract
   ok = ok && detail::deriveDir(prk, role, k.tx);
   ok = ok && detail::deriveDir(prk, peerRole(role), k.rx);
   ok = ok && detail::hkdfExpand1(prk, "rf address", t);
@@ -138,11 +137,10 @@ class SecureRx {
         !crypto::ctEqual(mac, pkt + SEC_HEADER_BYTES + PLAIN_BYTES, TAG_BYTES)) {
       ++authFail;
       return Result::BadTag;
-    } 
+    }
     uint8_t block[16];
     detail::counterBlock(pkt, block);
     if (!crypto::aes128Ctr(keys_.enc, block, pkt + SEC_HEADER_BYTES, plain, PLAIN_BYTES)) {
-  
       ++authFail;
       return Result::BadTag;
     }
@@ -163,3 +161,5 @@ class SecureRx {
   bool have_ = false;
   uint64_t last_ = 0;
 };
+
+}  

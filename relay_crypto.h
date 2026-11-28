@@ -3,8 +3,15 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "relay_crypto_soft.h"
+
+#if !defined(RELAY_CRYPTO_PORTABLE) && defined(__has_include)
+#if __has_include("mbedtls/aes.h") && __has_include("mbedtls/md.h")
+#define RELAY_HAVE_MBEDTLS 1
 #include "mbedtls/aes.h"
 #include "mbedtls/md.h"
+#endif
+#endif
 
 namespace relay {
 namespace crypto {
@@ -19,6 +26,9 @@ inline bool ctEqual(const uint8_t *a, const uint8_t *b, size_t n) {
   for (size_t i = 0; i < n; ++i) diff |= static_cast<uint8_t>(a[i] ^ b[i]);
   return diff == 0;
 }
+
+#ifdef RELAY_HAVE_MBEDTLS
+namespace mbed {
 
 inline bool hmacSha256(const uint8_t *key, size_t keyLen, const uint8_t *data, size_t len, uint8_t out[32]) {
   const mbedtls_md_info_t *info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
@@ -44,4 +54,25 @@ inline bool aes128Ctr(const uint8_t key[16], const uint8_t counterBlock[16], con
 }
 
 }  
+
+constexpr const char *kBackendName = "mbedtls";
+inline bool hmacSha256(const uint8_t *key, size_t keyLen, const uint8_t *data, size_t len, uint8_t out[32]) {
+  return mbed::hmacSha256(key, keyLen, data, len, out);
+}
+inline bool aes128Ctr(const uint8_t key[16], const uint8_t counterBlock[16], const uint8_t *in, uint8_t *out,
+                      size_t len) {
+  return mbed::aes128Ctr(key, counterBlock, in, out, len);
+}
+#else
+constexpr const char *kBackendName = "portable";
+inline bool hmacSha256(const uint8_t *key, size_t keyLen, const uint8_t *data, size_t len, uint8_t out[32]) {
+  return soft::hmacSha256(key, keyLen, data, len, out);
+}
+inline bool aes128Ctr(const uint8_t key[16], const uint8_t counterBlock[16], const uint8_t *in, uint8_t *out,
+                      size_t len) {
+  return soft::aes128Ctr(key, counterBlock, in, out, len);
+}
+#endif
+
 }  
+} 

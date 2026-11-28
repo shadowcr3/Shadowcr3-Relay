@@ -17,8 +17,8 @@ static const int16_t kAdpcmStep[89] = {
 static const int8_t kAdpcmIndex[16] = {-1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8};
 
 struct AdpcmState {
-  int pred = 0;
-  int idx = 0;
+  int pred = 0;  
+  int idx = 0;   
 };
 
 inline void adpcmApply(AdpcmState &s, uint8_t nib) {
@@ -44,7 +44,7 @@ inline void adpcmPackState(const AdpcmState &s, uint8_t *out3) {
 inline AdpcmState adpcmUnpackState(const uint8_t *in3) {
   AdpcmState s;
   s.pred = static_cast<int16_t>(static_cast<uint16_t>(in3[0] | (in3[1] << 8)));
-  s.idx = in3[2] > 88 ? 88 : in3[2]; 
+  s.idx = in3[2] > 88 ? 88 : in3[2];  
   return s;
 }
 

@@ -23,6 +23,7 @@ inline int hexVal(char c) {
   return -1;
 }
 
+
 inline bool parseHex(const char *s, size_t nBytes, uint8_t *out) {
   if (strlen(s) != nBytes * 2) return false;
   for (size_t i = 0; i < nBytes; ++i) {
@@ -34,7 +35,7 @@ inline bool parseHex(const char *s, size_t nBytes, uint8_t *out) {
   return true;
 }
 
-inline void toHex(const uint8_t *in, size_t n, char *out) { 
+inline void toHex(const uint8_t *in, size_t n, char *out) {  
   static const char kDigits[] = "0123456789abcdef";
   for (size_t i = 0; i < n; ++i) {
     out[2 * i] = kDigits[in[i] >> 4];
